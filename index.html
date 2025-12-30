@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>To Do List</title>
+</head>
+<body>
+    <header>
+        <h1>To Do List</h1>
+    </header>
+    <main>
+        <section id="adicionarTask">
+            <form action="">
+                <h2>Insira uma nova tarefa</h2>
+                <label for="nomeTarefa">Nome:</label>
+                <input type="text" name="nomeTarefa" id="nome" placeholder="Insira o nome da tarefa" required>
+                <button>Adicionar</button>
+            </form>
+        </section>
+        <section id="listarTask">
+            <h2>Tarefas pendentes</h2>
+            <div id="listar">
+                <!-- As tarefas serão listadas aqui, exemplo: -->
+                 <div class="task">
+                    <p>Nome da tarefa</p>
+                    <input type="checkbox" name="tarefa1" id="tarefa1">
+                 </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>Produzido por Rayssa durante a Week 1 do projeto Desencalha. &copy2025 </p>
+    </footer>
+</body>
+</html>
