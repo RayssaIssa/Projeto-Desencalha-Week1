@@ -1,0 +1,26 @@
+{
+  "name": "projeto-desencalha-week1",
+  "version": "1.0.0",
+  "description": "Este projeto é feito com o objetivo de me destravar no desenvolvimento de aplicações, começando simples e evoluindo a cada semana.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RayssaIssa/Projeto-Desencalha-Week1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/RayssaIssa/Projeto-Desencalha-Week1/issues"
+  },
+  "homepage": "https://github.com/RayssaIssa/Projeto-Desencalha-Week1#readme",
+  "dependencies": {
+    "body-parser": "^2.2.1",
+    "cors": "^2.8.5",
+    "express": "^5.2.1"
+  }
+}

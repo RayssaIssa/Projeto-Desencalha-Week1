@@ -13,6 +13,8 @@ request.onload = function() {
 
 // A LISTAGEM ESTA FUNCIONANDO! PRECISO FAZER O SALVAMENTO FUNCIONAR TAMBEM
 
+var tamanhoTarefas = tarefas.length;
+
 function listarTarefas(tarefas) {
     const lista = document.getElementById('listar');
     lista.innerHTML = '';
@@ -37,7 +39,8 @@ function listarTarefas(tarefas) {
 
         const checkConcluida = document.createElement('input');
         checkConcluida.type = 'checkbox';
-        checkConcluida.id = 'task_' + i;
+        checkConcluida.id = tarefas[i].id;
+        checkConcluida.className = 'checkTask';
         checkConcluida.checked = tarefas[i].concluida;      
         
         item.appendChild(pNome);
@@ -46,18 +49,31 @@ function listarTarefas(tarefas) {
     }
 }
 
-function salvarTask(nome) {
-    var tarefa = JSON.stringify({ 
+async function salvarTask(nome) {
+    const tarefa = { 
         nome: nome, 
         concluida: false 
-    });
+    }
 
-    // PRECISO FAZER ISSO FUNCIONAR 
+    try{
+        // Enviando para o servidor
+        const resposta = await fetch('http://localhost:5500/salvar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(tarefa)
+        });
 
-    var request = new XMLHttpRequest();
-    request.open('POST', requestURL);   //Configura a requisição: método POST e passando a URL
-    request.setRequestHeader('Content-Type', 'application/json;charset=UTF-8'); //Define o cabeçalho da requisição para indicar que o corpo é JSON
-    request.send(tarefa);
+        if(resposta.ok) {
+            alert('Tarefa salva com sucesso!');
+        } else {
+            alert('Erro ao salvar a tarefa.');
+        } 
+    }catch(error) {
+        console.error('Erro na requisição:', error);
+        alert('Erro ao salvar a tarefa.');
+    }
 }
 
 const btaddTask = document.getElementById('addNewTask');
@@ -74,5 +90,42 @@ btaddTask.addEventListener('click', function() {
 
     console.log('Tarefa adicionada: ' + nomeTask);
     inputNomeTask.value = '';   //Limpa o campo de entrada após adicionar a tarefa, assim não fica recarregando sem eu pedir
-    
 })
+
+document.addEventListener('change', function (event) {
+    if (event.target.classList.contains('checkTask')) {
+        const tarefaNome = event.target.nome;
+        const tarefaId = event.target.id;
+        const isChecked = event.target.checked;
+
+        console.log('Evento disparou', tarefaNome, isChecked);
+        atualizarTarefaConcluida(tarefaNome, tarefaId, isChecked);
+    }
+});
+
+async function atualizarTarefaConcluida(tarefaNome, tarefaId, concluida) {
+    const tarefa = {
+        nome: tarefaNome,
+        concluida: concluida
+    }
+    
+    try{
+        // Enviando para o servidor
+        const resposta = await fetch('http://localhost:5500/salvar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(tarefa)
+        });
+
+        if(resposta.ok) {
+            alert('Tarefa salva com sucesso!');
+        } else {
+            alert('Erro ao salvar a tarefa.');
+        }
+    }catch(error) {
+        console.error('Erro na requisição:', error);
+        alert('Erro ao salvar a tarefa.');
+    }
+}
