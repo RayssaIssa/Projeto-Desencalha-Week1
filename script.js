@@ -1,83 +1,107 @@
+listarTarefas();
+
+const lista = document.getElementById('listar');
+const btaddTask = document.getElementById('addNewTask');
+const inputNomeTask = document.getElementById('nome');
+
 // Começando a requisição para obter os dados do arquivo JSON
-var requestURL = 'dados.json';
-var request = new XMLHttpRequest();
-request.open('GET', requestURL);    //Configura a requisição: método GET e passando a URL
+const url = 'dados.json';
 
-request.responseType = 'json';  //Define o tipo de resposta esperada como JSON
-request.send();
+function listarTarefas() {
+    fetch(url, {
+        method: 'GET'
 
-request.onload = function() {
-    var tarefas = request.response;  //Armazena a resposta JSON 
-    listarTarefas(tarefas);
+    }).then(response => {
+        return response.json();
+
+    }).then(tarefas => {
+        lista.innerHTML = '';
+        console.log(tarefas);
+
+        // Verifica se há tarefas para listar
+        if (!tarefas || !Array.isArray(tarefas) || tarefas.length === 0) {
+            const msg = document.createElement('p');
+            msg.textContent = 'Nenhuma tarefa cadastrada.';
+            lista.appendChild(msg);
+            return;
+        }
+
+        // Usando DocumentFragment para melhorar a performance na manipulação do DOM
+        const fragment = document.createDocumentFragment();
+
+        // Itera sobre cada tarefa e cria os elementos HTML correspondentes para exibição
+        for (let i = 0; i < tarefas.length; i++) {
+            const item = document.createElement('div');
+            item.classList.add('task');
+            item.id = tarefas[i].id;
+
+            const pNome = document.createElement('p');
+            pNome.textContent = tarefas[i].nome;
+
+            const checkConcluida = document.createElement('input');
+            checkConcluida.type = 'checkbox';
+            checkConcluida.classList.add('checkTask');
+            checkConcluida.checked = tarefas[i].concluida;      
+            
+            item.appendChild(pNome);
+            item.appendChild(checkConcluida);
+            fragment.appendChild(item);
+        }
+
+        lista.appendChild(fragment);
+
+    }).catch(error => {
+        console.error('Erro ao buscar tarefas:', error);
+        lista.innerHTML = '<p>Erro ao carregar tarefas.</p>';
+    });
 }
 
-// A LISTAGEM ESTA FUNCIONANDO! PRECISO FAZER O SALVAMENTO FUNCIONAR TAMBEM
-
-var tamanhoTarefas = tarefas.length;
-
-function listarTarefas(tarefas) {
-    const lista = document.getElementById('listar');
-    lista.innerHTML = '';
-
-    console.log(tarefas); 
-    // Verifica se há tarefas para listar
-    if (!tarefas || !Array.isArray(tarefas) || tarefas.length === 0) {
-        const msg = document.createElement('p');
-        msg.textContent = 'Nenhuma tarefa cadastrada.';
-        lista.appendChild(msg);
-        return;
-    }
-
-    // Itera sobre cada tarefa e cria os elementos HTML correspondentes para exibição
-    for (let i = 0; i < tarefas.length; i++) {
-        const item = document.createElement('div');
-        item.className = 'task';
-
-        const pNome = document.createElement('p');
-        pNome.textContent = tarefas[i].nome;
-        pNome.id = 'task_' + i + '_' + tarefas[i].nome;
-
-        const checkConcluida = document.createElement('input');
-        checkConcluida.type = 'checkbox';
-        checkConcluida.id = tarefas[i].id;
-        checkConcluida.className = 'checkTask';
-        checkConcluida.checked = tarefas[i].concluida;      
-        
-        item.appendChild(pNome);
-        item.appendChild(checkConcluida);
-        lista.appendChild(item);
-    }
-}
-
-async function salvarTask(nome) {
-    const tarefa = { 
-        nome: nome, 
-        concluida: false 
-    }
-
-    try{
-        // Enviando para o servidor
-        const resposta = await fetch('http://localhost:5500/salvar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(tarefa)
+function buscarIdUnico() {
+    fetch(url)
+    .then(response => response.json())
+    .then(tarefas => {  
+        let maxId = 0;
+        tarefas.forEach(tarefa => {
+            if (tarefa.id > maxId) {
+                maxId = tarefa.id;
+            }
         });
 
-        if(resposta.ok) {
+        return maxId + 1;
+    });
+}
+
+function salvarTask(nome) {
+    
+    buscarIdUnico().then(id => {
+        const tarefa = { 
+            id: id,
+            nome: nome, 
+            concluida: false 
+        }
+    });
+    
+    // Enviando para o servidor
+    const resposta = {
+        method: 'POST',
+        body: JSON.stringify(tarefa),
+        headers: new Headers({
+            'Content-Type': 'application/json; charset=UTF-8'
+        })
+    };
+
+    fetch(url, resposta).then(response => {
+        if(response.ok) {
+            listarTarefas();
             alert('Tarefa salva com sucesso!');
         } else {
             alert('Erro ao salvar a tarefa.');
         } 
-    }catch(error) {
+    }).catch(error => {
         console.error('Erro na requisição:', error);
         alert('Erro ao salvar a tarefa.');
-    }
+    });
 }
-
-const btaddTask = document.getElementById('addNewTask');
-const inputNomeTask = document.getElementById('nome');
 
 btaddTask.addEventListener('click', function() {
     const nomeTask = inputNomeTask.value.trim();  //O método trim() remove espaços em branco do início e do fim da string
@@ -91,7 +115,7 @@ btaddTask.addEventListener('click', function() {
     console.log('Tarefa adicionada: ' + nomeTask);
     inputNomeTask.value = '';   //Limpa o campo de entrada após adicionar a tarefa, assim não fica recarregando sem eu pedir
 })
-
+/*
 document.addEventListener('change', function (event) {
     if (event.target.classList.contains('checkTask')) {
         const tarefaNome = event.target.nome;
@@ -129,3 +153,4 @@ async function atualizarTarefaConcluida(tarefaNome, tarefaId, concluida) {
         alert('Erro ao salvar a tarefa.');
     }
 }
+    */
