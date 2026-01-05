@@ -1,28 +1,28 @@
-listarTarefas();
-
 const lista = document.getElementById('listar');
 const btaddTask = document.getElementById('addNewTask');
 const inputNomeTask = document.getElementById('nome');
 
-// Começando a requisição para obter os dados do arquivo JSON
-const url = 'dados.json';
+async function semTarefas() {
+    const msg = document.createElement('p');
+    msg.textContent = 'Nenhuma tarefa cadastrada.';
+    lista.appendChild(msg);
+}
 
-function listarTarefas() {
-    fetch(url, {
-        method: 'GET'
+async function listarTarefas() {
+    try {
+        // Lendo o arquivo JSON de forma assíncrona
+        const response = await fetch('http://localhost:5500/task');
+        console.log('Response status:', response.status);
+        console.log(response);
 
-    }).then(response => {
-        return response.json();
-
-    }).then(tarefas => {
-        lista.innerHTML = '';
+        const tarefas = await response.json();
         console.log(tarefas);
+        
+        lista.innerHTML = '';
 
         // Verifica se há tarefas para listar
         if (!tarefas || !Array.isArray(tarefas) || tarefas.length === 0) {
-            const msg = document.createElement('p');
-            msg.textContent = 'Nenhuma tarefa cadastrada.';
-            lista.appendChild(msg);
+            await semTarefas();
             return;
         }
 
@@ -50,57 +50,51 @@ function listarTarefas() {
 
         lista.appendChild(fragment);
 
-    }).catch(error => {
+    } catch(error) {
         console.error('Erro ao buscar tarefas:', error);
-        lista.innerHTML = '<p>Erro ao carregar tarefas.</p>';
-    });
+        await semTarefas();
+    }
 }
 
-function buscarIdUnico() {
-    fetch(url)
-    .then(response => response.json())
-    .then(tarefas => {  
-        let maxId = 0;
-        tarefas.forEach(tarefa => {
-            if (tarefa.id > maxId) {
-                maxId = tarefa.id;
-            }
-        });
+async function buscarIdUnico() {
+    const dados = await fetch('http://localhost:5500/task');
+    const tarefas = await dados.json();
 
-        return maxId + 1;
-    });
+    return tarefas.length + 1;
 }
+            
+async function salvarTask(nome) {
+    try {
 
-function salvarTask(nome) {
-    
-    buscarIdUnico().then(id => {
+        const idUnico = await buscarIdUnico();
+        
         const tarefa = { 
-            id: id,
+            id: idUnico,
             nome: nome, 
             concluida: false 
-        }
-    });
-    
-    // Enviando para o servidor
-    const resposta = {
-        method: 'POST',
-        body: JSON.stringify(tarefa),
-        headers: new Headers({
-            'Content-Type': 'application/json; charset=UTF-8'
-        })
-    };
+        };
 
-    fetch(url, resposta).then(response => {
-        if(response.ok) {
-            listarTarefas();
-            alert('Tarefa salva com sucesso!');
+        // Salvando no arquivo JSON
+        const response = await fetch('http://localhost:5500/task', {
+            method: 'POST',
+            headers: {
+                'User-Agent': 'undici-stream-example',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(tarefa),
+        });
+        
+        const dados = await response.json();
+        if (response.ok) {
+            listarTarefas();  // Atualiza a lista de tarefas após salvar uma nova
         } else {
-            alert('Erro ao salvar a tarefa.');
-        } 
-    }).catch(error => {
+            alert('Erro ao salvar a tarefa: ' + (dados.error || 'Erro desconhecido.'));
+        }
+
+    } catch(error) {
         console.error('Erro na requisição:', error);
         alert('Erro ao salvar a tarefa.');
-    });
+    };
 }
 
 btaddTask.addEventListener('click', function() {
@@ -114,7 +108,10 @@ btaddTask.addEventListener('click', function() {
 
     console.log('Tarefa adicionada: ' + nomeTask);
     inputNomeTask.value = '';   //Limpa o campo de entrada após adicionar a tarefa, assim não fica recarregando sem eu pedir
-})
+});
+
+listarTarefas();
+
 /*
 document.addEventListener('change', function (event) {
     if (event.target.classList.contains('checkTask')) {
