@@ -112,42 +112,52 @@ btaddTask.addEventListener('click', function() {
 
 listarTarefas();
 
-/*
 document.addEventListener('change', function (event) {
     if (event.target.classList.contains('checkTask')) {
-        const tarefaNome = event.target.nome;
-        const tarefaId = event.target.id;
+
+        // Obtendo informações da tarefa associada ao checkbox que disparou o evento
+        const tarefaNome = event.target.parentElement.querySelector('p').textContent;
+        const tarefaId = event.target.parentElement.id;
         const isChecked = event.target.checked;
 
-        console.log('Evento disparou', tarefaNome, isChecked);
-        atualizarTarefaConcluida(tarefaNome, tarefaId, isChecked);
+        console.log(`Evento disparou na tarefa: ${tarefaNome}, de id: ${tarefaId}, com checkbox: ${isChecked}`);
+        attTarefaConcluida(tarefaNome, tarefaId, isChecked);
     }
 });
 
-async function atualizarTarefaConcluida(tarefaNome, tarefaId, concluida) {
+async function attTarefaConcluida(tarefaNome, tarefaId, concluida) {
     const tarefa = {
+        id: Number(tarefaId),
         nome: tarefaNome,
         concluida: concluida
     }
+    console.log(tarefa);
     
     try{
         // Enviando para o servidor
-        const resposta = await fetch('http://localhost:5500/salvar', {
-            method: 'POST',
+        const response = await fetch(`http://localhost:5500/task/${tarefaId}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(tarefa)
         });
+        console.log(response);
 
-        if(resposta.ok) {
-            alert('Tarefa salva com sucesso!');
+        const dados = await response.json();
+        console.log(dados);
+
+        if(response.ok) {
+            console.log('Tarefa atualizada com sucesso!');
+            listarTarefas(); 
         } else {
-            alert('Erro ao salvar a tarefa.');
+            console.error('Erro ao atualizar a tarefa:', response.statusText);
+            console.error('Status:', response.status);
         }
+
     }catch(error) {
         console.error('Erro na requisição:', error);
-        alert('Erro ao salvar a tarefa.');
+        alert('Erro ao atualizar a tarefa.');
     }
 }
-    */
+    
